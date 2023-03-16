@@ -46,7 +46,7 @@ python3 secmon_manager.py deploy
 <host_machine_IP_address>:8080/secmon/web
 ```
 
-After successful installation configure logs forwarding on clients using [rsyslog service](https://github.com/Miropanak/dockerized_secmon/edit/master/README.md#how-to-configure-clients-for-logs-forwarding).
+After successful installation configure logs forwarding on clients using [rsyslog service](https://github.com/Miropanak/dockerized_secmon#how-to-configure-clients-for-logs-forwarding).
 
 ---
 
@@ -86,7 +86,7 @@ python3 secmon_manager.py deploy
 <host_machine_IP_address>:8080/secmon/web
 ```
 
-After successful installation configure logs forwarding on clients using [rsyslog service](https://github.com/Miropanak/dockerized_secmon/edit/master/README.md#how-to-configure-clients-for-logs-forwarding).
+After successful installation configure logs forwarding on clients using [rsyslog service](https://github.com/Miropanak/dockerized_secmon#how-to-configure-clients-for-logs-forwarding).
 
 ---
 
@@ -133,7 +133,7 @@ python3 secmon_manager.py deploy
 <host_machine_IP_address>:8080/secmon/web
 ```
 
-After successful installation configure logs forwarding on clients using [rsyslog service](https://github.com/Miropanak/dockerized_secmon/edit/master/README.md#how-to-configure-clients-for-logs-forwarding).
+After successful installation configure logs forwarding on clients using [rsyslog service](https://github.com/Miropanak/dockerized_secmon#how-to-configure-clients-for-logs-forwarding).
 
 ---
 
