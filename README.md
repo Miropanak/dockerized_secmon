@@ -242,4 +242,4 @@ SecMon logs are located in file `/var/log/docker/secmon.log`
   - If the folder `/var/log/secmon` contains only name pipes `__secInput` and `__Output` check status of rsyslog service with command `systemctl status rsyslog`, it could be error with permission on the folder `/var/log/secmon`.
 
 #### How to test logs forwarding
-The simplest way how to test logs forwarding is to initiate ssh connection to client machine and then check if file `/var/log/secmon/<client_hostname>/secure`
+The simplest way how to test logs forwarding is to initiate ssh connection to client machine and then check existence of the file `/var/log/secmon/<client_hostname>/secure`
