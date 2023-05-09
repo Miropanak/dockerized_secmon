@@ -233,6 +233,71 @@ Run `psql`:
 - Changes in `composer.json` file: `docker exec -it secmon_app composer update`
 - Changes in `./commands` directory/New enrichment module/New normalization or correlation rules: `python3 secmon_manager.py restart`
 
+### Add enrichment module
+1. Implement the module and name it `<Module_name>Controller.php` (e.g. AggregatorController.php)
+2. Add script of the implemented module to the subdirectory `./commands` within secmon directory(here are other event proccesing pipeline modules)
+3. Create Dockerfile `./deployment/dockerfiles/secmon_<module_name>.Dockerfile` within secmon directory
+Hint: Take inspirations from other Dockerfiles in subdirectory `./deployment/dockerfiles`
+4. Add Docker container build command `&& docker build -t secmon_<module_name> -f deployment/dockerfiles/secmon_<module_name>.Dockerfile ./deployment \` after last secmon module image build in the file `./secmon_deploy.sh`, this section starts at line 54
+5. Add new module parameters to configurtion file `./config/secmon_config.ini` if necessary and add this module under `[ENRICHMENT]` section
+Important: If SecMon is already deployed add these changes also to the file `./secmon_config.ini` too
+6. Add validation to `secmon_manager.py` if required
+7. Add new enrichment <module_name> to the array `all_enrichment_modules` at line 170 in the file `./secmon_manager.py`, insert it before correlator.
+8. Add lines to `secmon_manager.py` to assign tcp port number if the module is being used:
+	`
+  if config.get('ENRICHMENT', '<module_name>').lower() == "true":
+	    #write 0MQ port for <module_name>
+	    aggregator_conf_file.write("<Module_name>: %d\n" % port)
+	    enabled_enrichment_modules.append('<module_name>')
+  `
+9. Make sure that module implementation contains following code to read data from `aggregator_config.ini` and check wheater this module saves data to db:
+----------------------------------------------------------------------------------------------------------------------------
+	$aggregator_config_file = $this->openNonBlockingStream("/var/www/html/secmon/config/aggregator_config.ini");
+	$save_to_db = 0;
+	$module_loaded = false;			#variable used for reading line after <Module_name> module in config file
+	$next_module = "correlator";
+	if($aggregator_config_file){
+		while(($line = fgets($aggregator_config_file)) !== false){
+			if($module_loaded == true ){
+				$parts = explode(":", $line);
+				$next_module = strtolower(trim($parts[0]));
+				$module_loaded = false;
+			}
+
+			if(strpos($line, "<Module_name>:") !== FALSE){
+				$parts = explode(":", $line);
+				$port = trim($parts[1]);
+				$module_loaded = true;
+			}
+		}
+	}else{
+		 throw new Exception('Could not open a config file');
+	}
+	
+
+	fclose($aggregator_config_file);
+	$aggregator_config_file = escapeshellarg("/var/www/html/secmon/config/aggregator_config.ini");
+	$last_line = `tail -n 1 $aggregator_config_file` 		# Get last line of temp file
+
+	if(strpos($last_line, "<Module_name>:")!== FALSE){		# If last is <module_name>, then ensure saving event to db
+		$save_to_db = 1;
+	}
+	
+	$zmq = new ZMQContext();
+	$recSocket = $zmq->getSocket(ZMQ::SOCKET_PULL);  
+	$recSocket->bind("tcp://*:" . $port);
+
+	$sendSocket = $zmq->getSocket(ZMQ::SOCKET_PUSH);
+	$sendSocket->connect("tcp://secmon_" . $next_module . ":" . $port);
+
+	date_default_timezone_set("Europe/Bratislava");
+	echo "[" . date("Y-m-d H:i:s") . "] <Module_name> module started!" . PHP_EOL;
+----------------------------------------------------------------------------------------------------------------------------
+Hint: Take inspirations from existing enrichment modules `./commands/GeoipController.php` and `./commands/NetworkController.php`
+
+Throughout all the process preserve module naming convention!!!
+
+
 ### Debug
 SecMon logs are located in file `/var/log/docker/secmon.log`
 
